@@ -1,0 +1,18 @@
+{{- if .Values.keda.enabled }}
+{{- include "email-summarizer.scaledObject" (dict
+  "namespace" (.Values.namespace | default "default")
+  "defaults" .Values.keda.defaults
+  "worker" (dict
+    "name" "email-summarizer-summarize-email-worker"
+    "taskQueue" "email-summarizer-tq"
+    "minReplicas" ((.Values.keda.workers).summarize_email | default dict).minReplicas
+    "maxReplicas" ((.Values.keda.workers).summarize_email | default dict).maxReplicas
+    "targetQueueSize" ((.Values.keda.workers).summarize_email | default dict).targetQueueSize
+    "cooldownPeriod" ((.Values.keda.workers).summarize_email | default dict).cooldownPeriod
+    "scaleDownStabilization" ((.Values.keda.workers).summarize_email | default dict).scaleDownStabilization
+    "pollingInterval" ((.Values.keda.workers).summarize_email | default dict).pollingInterval
+    "queueTypes" ((.Values.keda.workers).summarize_email | default dict).queueTypes
+    "activationTargetQueueSize" ((.Values.keda.workers).summarize_email | default dict).activationTargetQueueSize
+  )
+) }}
+{{- end }}

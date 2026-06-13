@@ -1,0 +1,69 @@
+# Default values for email-summarizer-ui
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Application configuration
+app:
+  name: email-summarizer-ui
+  port: 5174
+  path: /agents/email-summarizer
+  replicas: 2
+
+# Container image
+image:
+  repository: ""                  # Required: ACR URL
+  tag: ""                         # Required: Image tag
+  pullPolicy: Always
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: "2"
+    memory: 2048Mi
+  requests:
+    cpu: 250m
+    memory: 1024Mi
+
+# Azure Key Vault
+keyvault: ""                      # Required: Key Vault name
+
+# Azure Tenant ID for workload identity
+tenantId: ""                      # Required for CSI driver and Azure SDK
+clientId: ""                      # Set dynamically by CI/CD workflow
+
+# Auth0 configuration
+auth0:
+  audienceSuffix: "/api/v2/"      # Appended to AUTH0_DOMAIN to compute AUTH0_AUDIENCE
+
+# Secret Provider Class for CSI driver
+secretProviderClass:
+  enabled: true
+
+# Kubernetes namespace
+namespace: email-summarizer
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: email-summarizer-ui-service-account
+  annotations: {}                 # Azure workload identity annotations (set by workflow)
+
+# Gateway API configuration
+gateway:
+  enabled: true
+  name: arata-gateway
+  namespace: gateway-infra
+  hostnames: []                   # Required: List of hostnames for HTTPRoute
+
+# Additional environment variables (app-specific)
+env: []
+
+# Spot node configuration
+nodeSelector:
+  karpenter.sh/capacity-type: "spot"
+
+tolerations:
+  - key: "workload-type"
+    operator: "Equal"
+    value: "spot-only"
+    effect: "NoSchedule"

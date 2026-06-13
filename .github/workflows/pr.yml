@@ -1,0 +1,21 @@
+name: PR Workflow
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  pr:
+    uses: Arata-AI/arataai-common/.github/workflows/reusable-pr.yml@main
+    with:
+      workflow-names: summarize_email
+      image-name: agent-email-summarizer
+    secrets:
+      AZURE_SP_KEY: ${{ secrets.AZURE_SP_KEY }}
+      AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+      LIBRARY_READER_APP_ID: ${{ vars.LIBRARY_READER_APP_ID }}
+      LIBRARY_READER_APP_SECRET: ${{ secrets.LIBRARY_READER_APP_SECRET }}

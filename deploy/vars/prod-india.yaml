@@ -1,0 +1,31 @@
+namespace: email-summarizer
+
+image:
+  repository: acrarataaiprod6dc85598.azurecr.io
+  release:
+    tag: &default_tag 0.0.1
+  connector:
+    tag: *default_tag
+  controller:
+    tag: *default_tag
+
+keyvault: kv-arata-ai-prod-india
+logLevel: "INFO"
+
+serviceAccount:
+  name: temporal-sa
+  annotations: {}
+
+keda:
+  enabled: true
+  defaults:
+    minReplicas: 0
+    maxReplicas: 10
+    targetQueueSize: 5
+    activationTargetQueueSize: 0
+    cooldownPeriod: 1800
+    scaleDownStabilization: 1800
+    pollingInterval: 15
+    queueTypes: "workflow,activity"
+  workers: {}
+

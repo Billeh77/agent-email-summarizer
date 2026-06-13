@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "email-summarizer-ui.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      {{- include "email-summarizer-ui.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "email-summarizer-ui.selectorLabels" . | nindent 8 }}
+        azure.workload.identity/use: "true"
+      annotations:
+        karpenter.sh/do-not-disrupt: "true"
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "email-summarizer-ui.selectorLabels" . | nindent 14 }}
+      serviceAccountName: {{ include "email-summarizer-ui.serviceAccountName" . }}
+      {{- if .Values.secretProviderClass.enabled }}
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.app.name }}-kv-sync
+      {{- end }}
+      containers:
+        - name: {{ .Values.app.name }}
+          image: "{{ .Values.image.repository }}/agent-email-summarizer-ui:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.secretProviderClass.enabled }}
+          volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.app.port }}
+              protocol: TCP
+          env:
+            - name: PORT
+              value: {{ .Values.app.port | quote }}
+            - name: HOST
+              value: "0.0.0.0"
+            - name: NODE_ENV
+              value: "production"
+            - name: KEY_VAULT_NAME
+              value: {{ .Values.keyvault }}
+            - name: AZURE_TENANT_ID
+              value: {{ .Values.tenantId | quote }}
+            - name: AZURE_CLIENT_ID
+              value: {{ .Values.clientId | quote }}
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .valueFrom }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .valueFrom.secretName }}
+                  key: {{ .valueFrom.key }}
+                  optional: true
+              {{- end }}
+            {{- end }}
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.app.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.app.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3

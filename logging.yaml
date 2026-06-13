@@ -1,0 +1,49 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  json:
+    "()": common.log_setup.logging_utils.JsonFormatter   # module path to your formatter
+
+filters:
+  max_below_error:
+    "()": common.log_setup.logging_utils.MaxLevelFilter
+    max_level: 40   # logging.ERROR
+
+handlers:
+  stdout:
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+    formatter: json
+    filters: [max_below_error]
+
+  stderr:
+    class: logging.StreamHandler
+    stream: ext://sys.stderr
+    level: ERROR
+    formatter: json
+
+root:
+  level: INFO
+  handlers: [stdout, stderr]
+
+loggers:
+  azure:
+    level: WARNING
+    propagate: true
+  azure.identity:
+    level: WARNING
+    propagate: true
+  azure.core:
+    level: WARNING
+    propagate: true
+  azure.keyvault:
+    level: WARNING
+    propagate: true
+  msal:
+    level: WARNING
+    propagate: true
+  urllib3:
+    level: WARNING
+    propagate: true
+

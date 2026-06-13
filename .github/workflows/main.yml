@@ -1,0 +1,54 @@
+name: Merge Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+   contents: write
+   packages: write
+
+jobs:
+   merge:
+     uses: Arata-AI/arataai-common/.github/workflows/reusable-agent-merge-main.yml@main
+     with:
+       workflow-names: summarize_email
+       agent-name: email-summarizer
+       friendly-name: Email Summarizer
+       agent-app-name: agent-email-summarizer
+       starting-workflow: SummarizeEmailWorkflow
+       starting-queue: email-summarizer-tq
+       config-workflow: ConfigWorkflow
+       config-queue: email-summarizer-config-tq
+       report-workflow: ReportingWorkflow
+       report-queue: email-summarizer-reporting-tq
+       namespace: email-summarizer
+       k8s-azure-credentials-secret: azure-credentials-email-summarizer
+     secrets:
+       AZURE_SP_KEY: ${{ secrets.AZURE_SP_KEY }}
+       AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+       LIBRARY_READER_APP_ID: ${{ vars.LIBRARY_READER_APP_ID }}
+       LIBRARY_READER_APP_SECRET: ${{ secrets.LIBRARY_READER_APP_SECRET }}
+
+
+   deploy-app:
+     needs: merge
+     uses: Arata-AI/arataai-common/.github/workflows/reusable-service-merge-main.yml@main
+     with:
+       image-name: agent-email-summarizer-ui
+       service-name: applications-email-summarizer
+       helm-chart-path: deploy-app
+       docker-file: app/Dockerfile
+       docker-build-context: .
+       namespace: email-summarizer
+       k8s-azure-credentials-secret: azure-credentials-email-summarizer-ui
+       skip-pulumi: true
+       skip-version-increment: true
+     secrets:
+       AZURE_SP_KEY: ${{ secrets.AZURE_SP_KEY }}
+       AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+       LIBRARY_READER_APP_ID: ${{ vars.LIBRARY_READER_APP_ID }}
+       LIBRARY_READER_APP_SECRET: ${{ secrets.LIBRARY_READER_APP_SECRET }}
+       NPM_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

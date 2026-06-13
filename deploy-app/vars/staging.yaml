@@ -1,0 +1,88 @@
+# email-summarizer UI - Staging environment
+
+namespace: email-summarizer
+
+app:
+  name: email-summarizer-ui
+  port: 5174
+  path: /agents/email-summarizer
+  replicas: 2
+
+image:
+  repository: acrarataaistaging5366d209.azurecr.io
+  tag: &default_tag 0.0.1
+
+keyvault: kv-arata-ai-staging
+
+# Set dynamically by CI/CD workflow
+tenantId: ""
+clientId: ""
+
+secretProviderClass:
+  enabled: true
+
+serviceAccount:
+  create: true
+  name: app-sa
+
+gateway:
+  enabled: true
+  name: arata-gateway
+  namespace: gateway-infra
+  hostnames:
+    - app.staging.arataai.com
+    - us.app.staging.arataai.com
+
+env:
+  - name: AZURE_KEYVAULT_URI
+    value: "https://kv-arata-ai-staging.vault.azure.net/"
+  - name: ARATA_DB_URL
+    value: "http://database.services"
+  - name: AZURE_CALLER_SERVICE
+    value: "applications-email-summarizer"
+  - name: AZURE_DB_SERVICE
+    value: "db-service"
+
+
+  - name: AZURE_FILE_SERVICE
+    value: "file-service"
+  - name: FILE_SERVICE_URL
+    value: "http://file.services"
+
+  - name: AUTH0_DOMAIN
+    valueFrom:
+      secretName: auth0-config
+      key: domain
+  - name: AUTH0_CLIENT_ID
+    valueFrom:
+      secretName: auth0-config
+      key: client-id
+  - name: AUTH0_CLIENT_SECRET
+    valueFrom:
+      secretName: auth0-config
+      key: client-secret
+  - name: AUTH0_SESSION_SECRET
+    valueFrom:
+      secretName: auth0-config
+      key: session-secret
+  - name: AUTH0_SCOPE
+    value: "openid profile email offline_access"
+  - name: AUTH0_AUDIENCE
+    value: "https://arataai-staging.us.auth0.com/api/v2/"
+  - name: HOME_APP_URL
+    value: "https://app.staging.arataai.com"
+  - name: SERVER_URL
+    value: "http://email-summarizer-ui.email-summarizer.svc.cluster.local/agents/email-summarizer"
+  - name: AGENT_API_URL
+    value: "http://api.email-summarizer.svc.cluster.local:8080"
+  - name: VITE_BASE_PATH
+    value: "/agents/email-summarizer"
+
+nodeSelector:
+  karpenter.sh/capacity-type: "spot"
+
+tolerations:
+  - key: "workload-type"
+    operator: "Equal"
+    value: "spot-only"
+    effect: "NoSchedule"

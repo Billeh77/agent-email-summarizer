@@ -1,0 +1,20 @@
+{
+    "llm_config": {
+        "llm_vendor": "openai",
+        "llm_model_name": "gpt-4.1",
+        "temperature": 0.0
+    },
+    "system_prompt": {
+        "id": "system",
+        "type": "path",
+        "path": "system.md"
+    },
+    "user_prompts": [
+        {
+            "id": "summarize",
+            "type": "path",
+            "path": "user.jinja",
+            "requires_media": true
+        }
+    ]
+}

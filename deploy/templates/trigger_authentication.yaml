@@ -1,0 +1,5 @@
+{{- if .Values.keda.enabled }}
+{{- include "email-summarizer.triggerAuthentication" (dict
+  "namespace" (.Values.namespace | default "default")
+) }}
+{{- end }}

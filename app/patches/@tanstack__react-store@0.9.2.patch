@@ -1,0 +1,107 @@
+diff --git a/dist/cjs/useStore.cjs b/dist/cjs/useStore.cjs
+index cd402e4b6f18198fc8f0efea441165c978936536..8db10f5ce0aeec5ff7e69366d461d72856fa5dd1 100644
+--- a/dist/cjs/useStore.cjs
++++ b/dist/cjs/useStore.cjs
+@@ -1,7 +1,6 @@
+ "use strict";
+ Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+ const react = require("react");
+-const withSelector = require("use-sync-external-store/shim/with-selector");
+ function defaultCompare(a, b) {
+   return a === b;
+ }
+@@ -17,15 +16,32 @@ function useStore(atom, selector, compare = defaultCompare) {
+     },
+     [atom]
+   );
+-  const boundGetSnapshot = react.useCallback(() => atom?.get(), [atom]);
+-  const selectedSnapshot = withSelector.useSyncExternalStoreWithSelector(
+-    subscribe,
+-    boundGetSnapshot,
+-    boundGetSnapshot,
+-    selector,
+-    compare
+-  );
+-  return selectedSnapshot;
++  const getSnapshot = react.useCallback(() => atom?.get(), [atom]);
++  const cachedRef = react.useRef(undefined);
++  const getServerSnapshot = react.useCallback(() => {
++    const next = atom?.get();
++    if (cachedRef.current === undefined || !compare(cachedRef.current, next)) {
++      cachedRef.current = next;
++    }
++    return cachedRef.current;
++  }, [atom, compare]);
++  const snapshot = react.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
++  const selectorRef = react.useRef({ selector, result: undefined, snapshot: undefined });
++  if (
++    selectorRef.current.snapshot !== snapshot ||
++    selectorRef.current.selector !== selector
++  ) {
++    const nextResult = selector(snapshot);
++    if (
++      selectorRef.current.result === undefined ||
++      !compare(selectorRef.current.result, nextResult)
++    ) {
++      selectorRef.current.result = nextResult;
++    }
++    selectorRef.current.snapshot = snapshot;
++    selectorRef.current.selector = selector;
++  }
++  return selectorRef.current.result;
+ }
+ exports.useStore = useStore;
+ //# sourceMappingURL=useStore.cjs.map
+diff --git a/dist/esm/useStore.js b/dist/esm/useStore.js
+index 58999934c4d6037f2e5ee94b955f4accd4511ee5..72851f15af822cdbc2e37a3338f5f9d5f2fbd6ea 100644
+--- a/dist/esm/useStore.js
++++ b/dist/esm/useStore.js
+@@ -1,5 +1,4 @@
+-import { useCallback } from "react";
+-import { useSyncExternalStoreWithSelector } from "use-sync-external-store/shim/with-selector";
++import { useCallback, useRef, useSyncExternalStore } from "react";
+ function defaultCompare(a, b) {
+   return a === b;
+ }
+@@ -15,15 +14,32 @@ function useStore(atom, selector, compare = defaultCompare) {
+     },
+     [atom]
+   );
+-  const boundGetSnapshot = useCallback(() => atom?.get(), [atom]);
+-  const selectedSnapshot = useSyncExternalStoreWithSelector(
+-    subscribe,
+-    boundGetSnapshot,
+-    boundGetSnapshot,
+-    selector,
+-    compare
+-  );
+-  return selectedSnapshot;
++  const getSnapshot = useCallback(() => atom?.get(), [atom]);
++  const cachedRef = useRef(undefined);
++  const getServerSnapshot = useCallback(() => {
++    const next = atom?.get();
++    if (cachedRef.current === undefined || !compare(cachedRef.current, next)) {
++      cachedRef.current = next;
++    }
++    return cachedRef.current;
++  }, [atom, compare]);
++  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
++  const selectorRef = useRef({ selector, result: undefined, snapshot: undefined });
++  if (
++    selectorRef.current.snapshot !== snapshot ||
++    selectorRef.current.selector !== selector
++  ) {
++    const nextResult = selector(snapshot);
++    if (
++      selectorRef.current.result === undefined ||
++      !compare(selectorRef.current.result, nextResult)
++    ) {
++      selectorRef.current.result = nextResult;
++    }
++    selectorRef.current.snapshot = snapshot;
++    selectorRef.current.selector = selector;
++  }
++  return selectorRef.current.result;
+ }
+ export {
+   useStore

@@ -1,0 +1,53 @@
+[project]
+name = "agent-email-summarizer"
+version = "0.1.0"
+description = "Monorepo for Email Summarizer"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.12.5",
+    "database_client",
+    "file_client",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "ruff>=0.14.9",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "pytest-mock>=3.14.0",
+]
+
+[tool.uv.workspace]
+members = [
+    "pulumi",
+    "workflows/summarize_email",
+]
+
+[tool.uv.sources]
+common = { git = "ssh://git@github.com/Arata-AI/arataai-common.git", tag="v3.0.4" }
+database_client = { git = "ssh://git@github.com/Arata-AI/database.git", tag="1.0.492" }
+common_activities = { git = "ssh://git@github.com/Arata-AI/arataai-common-activities.git", tag="v0.0.92" }
+file_client = { git = "ssh://git@github.com/Arata-AI/file.git", tag="1.0.99" }
+# main = { workspace = true }
+
+[tool.uv]
+override-dependencies = [
+    "common @ git+ssh://git@github.com/Arata-AI/arataai-common.git@v3.0.4",
+    "database-client @ git+ssh://git@github.com/Arata-AI/database.git@1.0.492",
+    "common-activities @ git+ssh://git@github.com/Arata-AI/arataai-common-activities.git@v0.0.92",
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "workflows/summarize_email/src",
+]
+
+addopts = "--import-mode=importlib"
+
+markers = [
+    "unit: marks tests as unit tests (fast, no external dependencies)",
+    "integration: marks tests as integration tests (slower, may require external services)",
+]

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: email-summarizer-ui
+description: Helm chart for email-summarizer UI
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+maintainers:
+  - name: Arata AI
+    email: engineering@arata.ai
+keywords:
+  - email-summarizer
+  - kubernetes
+  - ui
+  - agent
+home: https://github.com/Arata-AI/agent-email-summarizer
+sources:
+  - https://github.com/Arata-AI/agent-email-summarizer

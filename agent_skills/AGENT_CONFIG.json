@@ -1,0 +1,26 @@
+{
+    "type": "object",
+    "properties": {
+        "use_emails_v2": {
+            "type": "boolean",
+            "description": "Use v2 email API",
+            "default": true,
+            "readOnly": true
+        },
+        "include_action_items": {
+            "type": "boolean",
+            "description": "Include action items section in the summary reply",
+            "default": true
+        },
+        "include_attachment_highlights": {
+            "type": "boolean",
+            "description": "Include attachment highlights section in the summary reply",
+            "default": true
+        },
+        "reply_subject_prefix": {
+            "type": "string",
+            "description": "Prefix to add before the original subject in the reply (e.g. 'Re: ')",
+            "default": "Re: "
+        }
+    }
+}

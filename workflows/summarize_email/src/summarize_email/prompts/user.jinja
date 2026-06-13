@@ -1,0 +1,22 @@
+Please summarize the following email{% if attachment_count > 0 %} and its {{ attachment_count }} attachment(s){% endif %}.
+
+**From:** {{ sender }}
+**Subject:** {{ subject }}
+
+**Email Body:**
+{{ body }}
+
+{% if docx_texts %}
+**Attachment Text Content:**
+{% for name, text in docx_texts %}
+--- {{ name }} ---
+{{ text }}
+
+{% endfor %}
+{% endif %}
+
+{% if skipped_count > 0 %}
+Note: {{ skipped_count }} attachment(s) were skipped (unsupported format).
+{% endif %}
+
+Produce a structured summary following the required output format.

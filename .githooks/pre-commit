@@ -1,0 +1,32 @@
+#!/bin/bash
+# Pre-commit hook to run black on staged Python files
+
+# Check if uv is available
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed or not in PATH"
+    echo "Please install uv: https://github.com/astral-sh/uv"
+    exit 1
+fi
+
+# Get list of staged Python files
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.py$')
+
+if [ -z "$staged_files" ]; then
+    exit 0
+fi
+
+# Run black on staged files
+echo "Running black on staged Python files..."
+uv run ruff check $staged_files
+
+# Check if black made changes
+if [ $? -ne 0 ]; then
+    echo "Error: black failed to format files"
+    exit 1
+fi
+
+# Re-stage the files in case black modified them
+git add $staged_files
+
+exit 0
+

@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: email-summarizer-summarize-email-worker
+   namespace: {{ .Values.namespace | default "default" }}
+   labels:
+      app: email-summarizer-summarize-email-worker
+spec:
+   selector:
+      matchLabels:
+         app: email-summarizer-summarize-email-worker
+   replicas: 1
+   template:
+      metadata:
+         labels:
+            app: email-summarizer-summarize-email-worker
+      spec:
+         topologySpreadConstraints:
+         - maxSkew: 1
+           topologyKey: kubernetes.io/hostname
+           whenUnsatisfiable: DoNotSchedule
+           labelSelector:
+             matchLabels:
+               app: email-summarizer-summarize-email-worker
+         serviceAccountName: {{ .Values.serviceAccount.name }}
+         containers:
+            - name: email-summarizer-summarize-email-worker
+              image: {{ .Values.image.repository }}/agent-email-summarizer-summarize_email:{{ .Values.image.connector.tag }}
+              args: ["src/summarize_email/worker.py"]
+              imagePullPolicy: Always
+              env:
+                - name: KEY_VAULT_NAME
+                  value: {{ .Values.keyvault }}
+                - name: TEMPORAL_ENDPOINT
+                  valueFrom:
+                    secretKeyRef:
+                      name: temporal-credentials
+                      key: endpoint
+                - name: TEMPORAL_NAMESPACE
+                  valueFrom:
+                    secretKeyRef:
+                      name: temporal-credentials
+                      key: namespace
+                - name: AZURE_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: azure-credentials-email-summarizer
+                      key: client-id
+                - name: AZURE_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: azure-credentials-email-summarizer
+                      key: client-secret
+                - name: AZURE_TENANT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: azure-credentials-email-summarizer
+                      key: tenant-id
+                - name: AZURE_SUBSCRIPTION_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: azure-credentials-email-summarizer
+                      key: subscription-id
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: "2048Mi"
+                requests:
+                  cpu: "250m"
+                  memory: "1024Mi"
+              readinessProbe:
+                exec:
+                  command:
+                    - ls
+                    - /
+                failureThreshold: 3
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                successThreshold: 1
+                timeoutSeconds: 1
+              livenessProbe:
+                exec:
+                  command:
+                    - ls
+                    - /
+                failureThreshold: 3
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                successThreshold: 1
+                timeoutSeconds: 1

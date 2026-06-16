@@ -1,7 +1,6 @@
 """Email summarizer workflow — triggered by the multi-agent-poller."""
 import asyncio
 import logging
-import time
 from datetime import timedelta
 from typing import cast
 
@@ -39,7 +38,7 @@ class SummarizeEmailWorkflow:
     @workflow.run
     async def run(self, invocation: Invocation) -> str:
         workflow_id = workflow.info().workflow_id
-        start_time = time.time()
+        start_time = workflow.now()
         logger.info(f"SummarizeEmailWorkflow started workflow_id={workflow_id}")
 
         if invocation.type != InvocationType.EMAIL:
@@ -93,7 +92,7 @@ class SummarizeEmailWorkflow:
         # Persist summary
         await workflow.execute_activity(
             save_summary,
-            args=[tenant_id, agent_id, email_id, summary],
+            args=[tenant_id, agent_id, email_id, email.subject, email.body, summary],
             start_to_close_timeout=timedelta(seconds=30),
             retry_policy=_RETRY_SAVE,
         )
@@ -106,6 +105,6 @@ class SummarizeEmailWorkflow:
             retry_policy=_RETRY_DEFAULT,
         )
 
-        duration_ms = round((time.time() - start_time) * 1000)
+        duration_ms = round((workflow.now() - start_time).total_seconds() * 1000)
         logger.info(f"SummarizeEmailWorkflow completed email={email_id} duration_ms={duration_ms}")
         return f"Completed: summarized and replied to email {email_id}"

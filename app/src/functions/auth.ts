@@ -14,7 +14,11 @@ export const reAuthFn = createServerFn({ method: "POST" }).handler(
 		const { refreshToken } = session.data;
 		if (!refreshToken) return false;
 
-		const newTokens = await refreshAccessToken(refreshToken);
+		const newTokens = await refreshAccessToken(refreshToken, {
+			domain: env.AUTH0_DOMAIN,
+			clientId: env.AUTH0_CLIENT_ID,
+			clientSecret: env.AUTH0_CLIENT_SECRET,
+		});
 		if (!newTokens) return false;
 
 		await session.update({

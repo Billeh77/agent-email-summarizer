@@ -27,7 +27,7 @@ members = [
 ]
 
 [tool.uv.sources]
-common = { git = "ssh://git@github.com/Arata-AI/arataai-common.git", tag="v3.0.4" }
+common = { git = "ssh://git@github.com/Arata-AI/arataai-common.git", tag="v3.2.1" }
 database_client = { git = "ssh://git@github.com/Arata-AI/database.git", tag="1.0.492" }
 common_activities = { git = "ssh://git@github.com/Arata-AI/arataai-common-activities.git", tag="v0.0.92" }
 file_client = { git = "ssh://git@github.com/Arata-AI/file.git", tag="1.0.99" }
@@ -35,7 +35,7 @@ file_client = { git = "ssh://git@github.com/Arata-AI/file.git", tag="1.0.99" }
 
 [tool.uv]
 override-dependencies = [
-    "common @ git+ssh://git@github.com/Arata-AI/arataai-common.git@v3.0.4",
+    "common @ git+ssh://git@github.com/Arata-AI/arataai-common.git@v3.2.1",
     "database-client @ git+ssh://git@github.com/Arata-AI/database.git@1.0.492",
     "common-activities @ git+ssh://git@github.com/Arata-AI/arataai-common-activities.git@v0.0.92",
 ]

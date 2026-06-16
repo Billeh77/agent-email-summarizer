@@ -92,7 +92,7 @@ async def test_workflow_processes_email_successfully():
         return _SUMMARY
 
     @activity.defn(name="save_summary")
-    async def mock_save(tenant_id, agent_id, eid, summary) -> UUID:
+    async def mock_save(tenant_id, agent_id, eid, subject, body, summary) -> UUID:
         return uuid4()
 
     @activity.defn(name="send_reply")
@@ -188,7 +188,7 @@ async def test_workflow_falls_back_to_agent_lookup_when_no_agent_id():
         return _SUMMARY
 
     @activity.defn(name="save_summary")
-    async def mock_save(tenant_id, agent_id, eid, summary) -> UUID:
+    async def mock_save(tenant_id, agent_id, eid, subject, body, summary) -> UUID:
         return uuid4()
 
     @activity.defn(name="send_reply")

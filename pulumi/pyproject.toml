@@ -5,7 +5,7 @@ description = "Receives emails, generates AI summaries of the email body and att
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "azure-identity>=1.25.1",
+    "azure-identity>=1.25.3",
     "azure-keyvault>=4.2.0",
     "pulumi>=3.208.0",
     "pulumi-azure>=6.22.0",
